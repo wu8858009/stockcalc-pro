@@ -57,6 +57,7 @@ b, .bold { font-weight: 700; }
 .page.on { display: flex; }
 .page:not(.on) { display: none !important; }
 .page.scroll { overflow-y: auto; }
+.page.row { flex-direction: row; align-content: flex-start; }   /* 買賣試算：區塊並排，放不下就換行 */
 .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .row .grow { flex: 1; }
 .col { display: flex; flex-direction: column; gap: 6px; }
@@ -203,7 +204,7 @@ label.chk { display: inline-flex; align-items: center; cursor: pointer; user-sel
   .form { grid-template-columns: minmax(0, 1fr); }
   .form > *, .group, .col { min-width: 0 !important; }
   .page .row > .group { flex-basis: 100% !important; }
-  .page.row { flex-wrap: nowrap !important; }
+  .page.row { flex-direction: column; flex-wrap: nowrap !important; align-items: stretch !important; }
   .page.row > .group { flex: none !important; }
   .page select, .page input:not([type=checkbox]), .dlg select, .dlg input:not([type=checkbox]) { max-width: 100%; }
   .page label.chk { white-space: normal; }
@@ -248,3 +249,64 @@ html.touch .navItem { padding: 11px 10px; }
 .dlgFoot .grow { flex: 1; }
 @media (max-width: 899px) { .chartBox { min-height: 260px; } }
 @media (max-width: 599px) { .chartBox { min-height: 240px; } .chartTitle { font-size: 14px; } }
+
+/* ---- 手機：寬表格改成卡片（一列一張，代號／名稱當標題，其餘欄位兩欄排列）---- */
+.cardSort { display: none; }
+@media (max-width: 599px) {
+  .tbl.wide { background: transparent; border: none; border-radius: 0; }
+  .tbl.wide .cardSort { display: flex; gap: 6px; align-items: center; position: sticky; top: 0; z-index: 2; background: var(--BG); padding: 0 0 6px; }
+  .tbl.wide .cardSort select { flex: 1; min-width: 0; min-height: 32px; }
+  .tbl.wide .cardSort button { flex: none; padding: 4px 10px; }
+  .tbl.wide table, .tbl.wide tbody { display: block; width: 100%; min-width: 0; }
+  .tbl.wide thead { display: none; }
+  .tbl.wide tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; padding: 9px 12px; margin-bottom: 8px;
+    background: var(--SURFACE); border: 1px solid var(--BORDER); border-radius: 10px; }
+  .tbl.wide tr:nth-child(even) td { background: transparent; }
+  .tbl.wide td { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; height: auto; min-height: 0; padding: 1px 0;
+    border: none; white-space: normal; text-align: right; overflow-wrap: anywhere; background: transparent !important; }
+  .tbl.wide td::before { content: attr(data-label); color: var(--MUTED); font-size: 11.5px; font-weight: 400; text-align: left; flex: none; max-width: 55%; }
+  .tbl.wide td:empty { display: none; }
+  .tbl.wide td.t { order: -1; font-size: 15px; font-weight: 700; justify-content: flex-start; text-align: left; padding-bottom: 5px;
+    border-bottom: 1px solid var(--GRID); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .tbl.wide td.t::before { content: none; }
+  .tbl.wide td.t1 { grid-column: 1 / -1; }
+  .tbl.wide td.empty { grid-column: 1 / -1; display: block; text-align: center; }
+  .tbl.wide td.empty::before { content: none; }
+  .tbl.wide tr.sel { background: var(--SELECT); border-color: var(--ACCENT); }
+  .tbl.wide tr.limitUp { background: var(--LIMIT_UP); } .tbl.wide tr.limitDown { background: var(--LIMIT_DOWN); }
+  .tbl.wide tr.limitUp td::before, .tbl.wide tr.limitDown td::before { color: rgba(255, 255, 255, .75); }
+  .tbl.wide td.flashUp { background: rgba(255, 93, 93, .28) !important; } .tbl.wide td.flashDown { background: rgba(47, 210, 124, .28) !important; }
+}
+
+/* ---- 平板／小筆電：側邊欄窄一點 ---- */
+@media (min-width: 900px) and (max-width: 1199px) {
+  #sidebar { width: 172px; }
+  .brand { font-size: 14px; }
+  .navItem { padding: 7px 8px; gap: 7px; }
+  .cardValue { font-size: 18px; }
+  .card { padding: 8px 10px; }
+}
+/* ---- 橫向手機（高度很矮）：卡片一排橫捲，只在「目前持股」顯示 ---- */
+@media (max-height: 500px) and (max-width: 999px) {
+  body[data-home="0"] #cards { display: none; }
+  #cards { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 6px; margin-top: 4px; scrollbar-width: none; }
+  .card { flex: 0 0 128px; padding: 4px 8px; border-radius: 8px; }
+  .cardTitle { font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cardValue { font-size: 14px; margin: 0; }
+  .cardSub { display: none; }
+  #pageTitle { font-size: 17px; }
+  #main { padding-top: calc(4px + env(safe-area-inset-top)); }
+  .page { overflow-y: auto; }
+  .page .tbl { min-height: 180px; }
+  .chartBox { min-height: 220px; }
+  #statusbar { height: calc(22px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 599px) {
+  div.hint { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: none; }
+  div.hint.open { -webkit-line-clamp: unset; display: block; }
+}
+@media (max-width: 599px) {
+  .tbl:not(.wide) table { width: 100%; }
+  .tbl:not(.wide) td { white-space: normal; overflow-wrap: anywhere; height: auto; padding: 6px; }
+  .tbl:not(.wide) th { white-space: normal; }
+}

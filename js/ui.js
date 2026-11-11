@@ -49,7 +49,7 @@
   U.esc = (s) => String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   U.btn = (text, fn, cls, tip) => el("button", { cls, onclick: fn, tip }, text);
   U.label = (text, cls) => el("span", { cls: cls || "" }, text);
-  U.hint = (text) => el("div", { cls: "hint" }, text);
+  U.hint = (text) => el("div", { cls: "hint", onclick: (e) => e.currentTarget.classList.toggle("open") }, text);   // 手機：只顯示兩行，點一下展開
 
   // ---------- 狀態列、提示 ----------
   let statusTimer = 0;
@@ -336,6 +336,11 @@
       this.table = el("table");
       this.thead = el("thead"); this.tbody = el("tbody");
       this.table.append(this.thead, this.tbody);
+      // 手機卡片模式用的排序列（表頭藏起來時改用這個排序）
+      this.sortSel = el("select", { onchange: () => { const i = +this.sortSel.value; if (i >= 0) this.sortBy(i, this.sortCol === i ? this.sortAsc : true); else { this.sortCol = -1; this.renderHead(); this.render(); } } });
+      this.sortDir = el("button", { onclick: () => { if (this.sortCol >= 0) this.sortBy(this.sortCol, !this.sortAsc); } });
+      this.sortBar = el("div", { cls: "cardSort" }, el("span", { cls: "hint" }, "排序"), this.sortSel, this.sortDir);
+      if (this.sortable) this.el.append(this.sortBar);
       this.el.append(this.table);
       this.headerTips = {};
       this.renderHead();
@@ -380,6 +385,18 @@
         tr.append(th);
       });
       this.thead.innerHTML = ""; this.thead.append(tr);
+      // 手機卡片模式：欄位 ≥ 5 的表格改成一列一張卡片；代號／名稱當卡片標題
+      this.labels = this.headers.map((h) => String(h).replace(/[▲▼]/g, "").trim());
+      this.titleIdx = this.labels.map((h, i) => (h === "代號" || h === "名稱" ? i : -1)).filter((i) => i >= 0);
+      if (!this.titleIdx.length) this.titleIdx = [0];
+      this.el.classList.toggle("wide", this.headers.length >= 5);
+      if (this.sortable) {
+        this.sortSel.innerHTML = "";
+        this.sortSel.append(el("option", { value: "-1" }, "（原始順序）"));
+        this.labels.forEach((h, i) => { const o = el("option", { value: String(i) }, h); if (i === this.sortCol) o.selected = true; this.sortSel.append(o); });
+        this.sortDir.textContent = this.sortAsc ? "▲ 小到大" : "▼ 大到小";
+        this.sortDir.disabled = this.sortCol < 0;
+      }
     }
     sortBy(i, asc) {
       if (asc === undefined) asc = i === this.sortCol ? !this.sortAsc : true;
@@ -409,7 +426,9 @@
         const tr = el("tr", { cls: (r.cls || "") + (this.sel.has(r.id) ? " sel" : "") });
         tr.dataset.id = r.id;
         r.cells.forEach((c, ci) => {
-          const td = el("td", { cls: (c.left ? "l" : "") + (c.link ? " link" : "") });
+          const ti = this.titleIdx.indexOf(ci);
+          const td = el("td", { cls: (c.left ? "l" : "") + (c.link ? " link" : "") + (ti >= 0 ? (this.titleIdx.length === 1 ? " t t1" : " t") : "") });
+          td.dataset.label = this.labels[ci] || "";
           if (c.html) td.innerHTML = c.html; else td.textContent = c.text;
           if (c.color && !r.cls) td.style.color = c.color;
           if (c.bg) td.style.background = c.bg;
