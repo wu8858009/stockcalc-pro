@@ -797,13 +797,17 @@
     st.onStatus = (t) => { App.syncLbl.textContent = "☁ " + t; };
     st.onAuthLost = () => showLogin("登入已過期，請重新輸入密碼");
     st.onRemote = () => { App.refreshAll(); U.status("已從其他裝置同步最新資料", 3000); };
+    const spMsg = (t) => { if (window.splashMsg) window.splashMsg(t); };
+    spMsg("連線雲端…");
     if (!st.token) { const rem = st.remembered(); if (rem) { try { await st.loginKey(rem.k); } catch (_e) { /* 改手動 */ } } }
     if (!st.token) return showLogin();
+    spMsg("同步資料…");
     try { await st.load(); } catch (e) {
       if (e.message === "auth") return;
       if (!st.loadCache()) return showLogin("連不上雲端：" + e.message);
       U.status("離線：顯示上次同步的資料", 8000);
     }
+    spMsg("建立畫面…");
     start();
   }
   function showLogin(msg) {
@@ -818,6 +822,7 @@
       el("img", { src: "icons/icon-64.png", style: { width: "48px" } }), el("h1", null, APP_NAME), el("span", { cls: "proBadge" }, EDITION + "　網頁版"),
       el("p", { cls: "hint" }, "資料存在你的 Google 試算表，電腦版、手機、網頁同步。"), pw, pw2, rem, go, err));
     document.body.append(box);
+    if (window.hideSplash) window.hideSplash();
     let setup = false, salt = "";
     st.status().then((s) => { salt = s.salt; setup = s.needsSetup; if (setup) { pw2.classList.remove("hidden"); go.textContent = "設定密碼並開始使用"; err.textContent = "第一次使用：請設定一組密碼（至少 6 個字）"; } })
       .catch((e) => { err.textContent = "連不上雲端：" + e.message; });
@@ -868,6 +873,7 @@
     App.refreshAll();
     App.lblTime.textContent = "";
     setTimeout(App.startupFetch, 300);
+    if (window.hideSplash) window.hideSplash();
     if ("Notification" in window && Notification.permission === "default") {
       document.addEventListener("click", function once() { Notification.requestPermission(); document.removeEventListener("click", once); });
     }

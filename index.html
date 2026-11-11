@@ -13,8 +13,66 @@
 <link rel="icon" href="icons/icon-64.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="css/styles.css">
+<style>
+/* ---- 啟動動畫（先於程式載入就顯示） ---- */
+#splash { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: radial-gradient(ellipse at 50% 42%, #16233a 0%, #0a0f16 62%); color: #e9eef5; transition: opacity .45s ease, transform .45s ease;
+  font-family: "Segoe UI", "Microsoft JhengHei UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+#splash.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+#splash .glow { position: absolute; width: min(70vw, 420px); aspect-ratio: 1; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -62%);
+  background: radial-gradient(circle, rgba(61,126,255,.28), rgba(109,93,245,.10) 45%, transparent 70%); animation: spGlow 2.4s ease-in-out infinite; }
+#splash svg { width: clamp(96px, 26vw, 132px); height: auto; position: relative; filter: drop-shadow(0 10px 28px rgba(61,126,255,.35)); }
+#splash .sq { transform-box: fill-box; transform-origin: 50% 50%; animation: spPop .55s cubic-bezier(.2,1.4,.4,1) both; }
+#splash .cd { transform-box: fill-box; transform-origin: 50% 100%; animation: spRise .42s cubic-bezier(.2,1.2,.4,1) both; }
+#splash .cd1 { animation-delay: .35s; } #splash .cd2 { animation-delay: .5s; } #splash .cd3 { animation-delay: .65s; }
+#splash .tl { stroke-dasharray: 1; stroke-dashoffset: 1; animation: spDraw .55s ease-out .9s forwards; }
+#splash .ar { transform-box: fill-box; transform-origin: 30% 70%; animation: spPop .35s cubic-bezier(.2,1.6,.4,1) 1.35s both; }
+#splash h1 { margin: 6px 0 0; font-size: clamp(20px, 6vw, 26px); font-weight: 700; letter-spacing: 2px; position: relative; animation: spUp .5s ease-out .55s both; }
+#splash .ed { position: relative; font-size: 12px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; border-radius: 10px; color: #f3e2b3;
+  background: linear-gradient(90deg, rgba(216,178,90,.25), rgba(216,178,90,.10)); border: 1px solid rgba(216,178,90,.45); animation: spUp .5s ease-out .75s both; }
+#splash .bar { position: relative; width: min(220px, 60vw); height: 3px; border-radius: 2px; background: #1c2531; overflow: hidden; margin-top: 10px; animation: spUp .4s ease-out .9s both; }
+#splash .bar i { position: absolute; top: 0; bottom: 0; width: 40%; border-radius: 2px; background: linear-gradient(90deg, transparent, #3d7eff, #6d5df5, transparent);
+  animation: spSlide 1.1s ease-in-out infinite; }
+#splash .msg { position: relative; font-size: 12px; color: #8b98aa; min-height: 16px; animation: spUp .4s ease-out 1s both; }
+@keyframes spPop { from { opacity: 0; transform: scale(.4) rotate(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes spRise { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: none; } }
+@keyframes spDraw { to { stroke-dashoffset: 0; } }
+@keyframes spUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes spSlide { from { left: -40%; } to { left: 100%; } }
+@keyframes spGlow { 0%, 100% { opacity: .7; transform: translate(-50%, -62%) scale(.94); } 50% { opacity: 1; transform: translate(-50%, -62%) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { #splash *, #splash { animation-duration: .01s !important; animation-delay: 0s !important; transition-duration: .01s !important; } }
+</style>
 </head>
 <body>
+<div id="splash" role="status" aria-label="載入中">
+  <div class="glow"></div>
+  <svg viewBox="0 0 256 256" aria-hidden="true">
+    <defs><linearGradient id="spG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+    <g class="sq"><rect x="6" y="6" width="244" height="244" rx="54" fill="url(#spG)"/>
+      <path d="M40 88H216M40 136H216M40 184H216" stroke="rgba(255,255,255,.15)" stroke-width="3"/></g>
+    <g class="cd cd1" fill="#2fd27c" stroke="#2fd27c"><line x1="76" y1="128" x2="76" y2="206" stroke-width="7" stroke-linecap="round"/><rect x="61" y="146" width="30" height="44" rx="5" stroke="none"/></g>
+    <g class="cd cd2" fill="#ff5d5d" stroke="#ff5d5d"><line x1="128" y1="96" x2="128" y2="178" stroke-width="7" stroke-linecap="round"/><rect x="113" y="112" width="30" height="48" rx="5" stroke="none"/></g>
+    <g class="cd cd3" fill="#ff5d5d" stroke="#ff5d5d"><line x1="180" y1="62" x2="180" y2="146" stroke-width="7" stroke-linecap="round"/><rect x="165" y="76" width="30" height="50" rx="5" stroke="none"/></g>
+    <path class="tl" pathLength="1" d="M40 206L92 164L140 178L196 92" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <polygon class="ar" points="222,50 170,70 214,104" fill="#fff"/>
+  </svg>
+  <h1>股票計算與持股</h1>
+  <span class="ed">企業版 PRO</span>
+  <div class="bar"><i></i></div>
+  <div class="msg" id="splashMsg">載入程式…</div>
+</div>
+<script>
+  (function () {
+    var t0 = Date.now(), done = false, sp = document.getElementById("splash");
+    window.splashMsg = function (t) { var m = document.getElementById("splashMsg"); if (m) m.textContent = t; };
+    window.hideSplash = function () {
+      if (done || !sp) return; done = true;
+      var wait = Math.max(0, 1700 - (Date.now() - t0));      // 動畫至少播完一輪
+      setTimeout(function () { sp.classList.add("out"); setTimeout(function () { sp.remove(); }, 500); }, wait);
+    };
+    setTimeout(window.hideSplash, 20000);                     // 保險：程式出錯也不會一直卡在啟動畫面
+  })();
+</script>
 <div id="app"></div>
 <noscript>請開啟 JavaScript。</noscript>
 <script src="js/config.js"></script>
