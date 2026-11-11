@@ -29,7 +29,7 @@
       this.el.append(el("div", { cls: "row" }, this.kseg, this.mseg, this.rseg, this.cnt, this.etype, this.filt, U.btn("重新整理", () => this.load(true)),
         el("span", { cls: "grow" }), U.btn("＋ 加入觀察", () => this.addSelected(), "primary", "快捷鍵：Ctrl+W／Enter")),
         this.status, this.table.el,
-        U.hint("資料來源：Yahoo 奇摩股市即時排行與報價。「全部 ETF」列出上市櫃所有 ETF，可依成交量、漲跌幅等排序，再用類型（股票型、債券、主動式、槓桿反向）或篩選字找。點「觀察」欄的「＋ 加入」或連按兩下，就會加入自選觀察，點「★ 已加入」可取消觀察；也可以選多列（Ctrl／Shift）後按右上「＋ 加入觀察」。右鍵可看基本資料、走勢圖、漲跌預測。"));
+        U.hint("資料來源：Yahoo 奇摩股市即時排行與報價。「全部 ETF」列出上市櫃所有 ETF，可依成交量、漲跌幅等排序，再用類型（股票型、債券、主動式、槓桿反向）或篩選字找。點「觀察」欄的「＋ 加入」或連按兩下，就會加入自選觀察，點「★ 已加入」可取消觀察；也可以選多列（Ctrl／Shift）後按右上「＋ 加入觀察」。" + U.menuHint() + "可看基本資料、走勢圖、漲跌預測。"));
       this.sync();
     }
     onShow() { this.load(); }

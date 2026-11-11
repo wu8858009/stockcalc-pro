@@ -52,8 +52,12 @@
     const menuBtn = U.btn("☰", () => side.classList.toggle("open"));
     menuBtn.id = "menuBtn";
     const top = el("div", { id: "topbar" }, menuBtn, App.pageTitle, App.pageSub, el("span", { cls: "spacer" }), App.lblTime, App.bRef,
-      U.btn("＋ 新增股利", () => App.addDiv(), "", T.WIDGET_TIPS["＋ 新增股利"] + "\n快捷鍵：Ctrl+D"),
-      U.btn("＋ 新增交易", () => App.addTx(), "primary", T.WIDGET_TIPS["＋ 新增交易"] + "\n快捷鍵：Ctrl+N"));
+      App.bDiv = U.btn("＋ 新增股利", () => App.addDiv(), "", T.WIDGET_TIPS["＋ 新增股利"] + "\n快捷鍵：Ctrl+D"),
+      App.bTx = U.btn("＋ 新增交易", () => App.addTx(), "primary", T.WIDGET_TIPS["＋ 新增交易"] + "\n快捷鍵：Ctrl+N"));
+    // 手機：上方按鈕改短字，一行放得下
+    const shortBtns = () => { const ph = U.isPhone(); App.bDiv.textContent = ph ? "＋股利" : "＋ 新增股利"; App.bTx.textContent = ph ? "＋交易" : "＋ 新增交易";
+      if (!App.bRef.disabled) App.bRef.textContent = ph ? "更新" : "更新股價"; };
+    U.onDevice.push(shortBtns); shortBtns();
     App.cards = {};
     const cards = el("div", { id: "cards" });
     for (const [k, t] of [["cost", "持股總成本"], ["mv", "目前市值"], ["un", "未實現損益"], ["sell", "現在賣出實賺"], ["day", "今日損益"],
@@ -66,7 +70,8 @@
     App.syncLbl = el("span", { cls: "sync" });
     const sb = el("div", { id: "statusbar" }, el("span", { id: "statusMsg" }), App.syncLbl, el("span", { cls: "edition" }, `◆ ${EDITION}　v${T.VERSION}`));
     const main = el("div", { id: "main" }, top, cards, App.pagesBox, sb);
-    root.append(side, main);
+    const shade = el("div", { id: "navShade", onclick: () => side.classList.remove("open") });   // 手機：點選單外面關閉
+    root.append(side, shade, main);
     document.body.append(el("div", { id: "tip", cls: "hidden" }), el("div", { id: "toasts" }));
   }
   App.addPage = function (title, page, sub) {
@@ -94,6 +99,7 @@
       const s = App.navItems.find((x) => x.page === entry.page && x.sub && x.sub.index === entry.page.currentSub());
       if (s) { App.navItems.forEach((x) => x.item.classList.toggle("on", x === s)); App.pageTitle.textContent = entry.title; App.pageSub.textContent = "›  " + s.title; }
     }
+    document.body.dataset.home = entry.page === HoldPage ? "1" : "0";   // 手機只在「目前持股」顯示統計卡片
     if (entry.page.onShow) entry.page.onShow();
   };
   App.syncSub = function (page) {               // 子頁被程式切換時，左側選取跟著移動
@@ -115,7 +121,7 @@
       this.seg.buttons[1].dataset.tip = "不含息：損益、報酬率只看股價差，不算配息\n快捷鍵：Ctrl+I";
       this.chkClosed = U.check("顯示已出清股票", s.show_closed, (on) => { App.store.settings.show_closed = on; App.store.save(); App.fillHoldings(); }, T.WIDGET_TIPS["顯示已出清股票"]);
       this.lblErr = el("span", { style: { color: "var(--GAIN)" } });
-      const top = el("div", { cls: "row" }, this.seg, el("span", { style: { width: "12px" } }), this.chkClosed, this.lblErr, el("span", { cls: "grow" }), el("span", null, "右鍵可快速買進／賣出／記股利"));
+      const top = el("div", { cls: "row" }, this.seg, el("span", { style: { width: "12px" } }), this.chkClosed, this.lblErr, el("span", { cls: "grow" }), el("span", { cls: "menuHint" }, U.menuHint() + "可快速買進／賣出／記股利"));
       const sort = s.sort_hold || [5, 0];
       this.table = new U.Table(["代號", "名稱", "股數", "平均成本", "總成本", "現價", "漲跌", "市值", "未實現損益", "報酬率", "現在賣出實賺",
         "已實現損益", "現金股利", "含息總損益", "佔比", "下一交易日上漲機率", "配息"],
@@ -653,7 +659,7 @@
     App.fetching = true; App.bRef.disabled = true; App.bRef.textContent = "更新中…";
     let quotes = {}, err = "";
     try { quotes = await M.fetchQuotes(syms, App.stockList, JSON.parse(JSON.stringify(App.store.prices))); } catch (e) { err = e.message; }
-    App.fetching = false; App.bRef.disabled = false; App.bRef.textContent = "更新股價";
+    App.fetching = false; App.bRef.disabled = false; App.bRef.textContent = U.isPhone() ? "更新" : "更新股價";
     if (Object.keys(quotes).length) {
       const now = C.now().time;
       Object.keys(quotes).forEach((k) => { quotes[k].fetched = now; App.store.prices[k] = quotes[k]; });

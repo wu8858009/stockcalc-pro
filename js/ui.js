@@ -4,6 +4,26 @@
   const U = {};
   const C = root.Core;
 
+  // ---- 自動偵測螢幕：phone（< 600 寬）／tablet（< 900）／desktop，觸控螢幕另外標記 ----
+  const mqPhone = matchMedia("(max-width: 599px)"), mqTablet = matchMedia("(max-width: 899px)"), mqTouch = matchMedia("(pointer: coarse)");
+  U.device = () => (mqPhone.matches ? "phone" : mqTablet.matches ? "tablet" : "desktop");
+  U.isPhone = () => mqPhone.matches;
+  U.isTouch = () => mqTouch.matches || navigator.maxTouchPoints > 0 && !matchMedia("(pointer: fine)").matches;
+  U.onDevice = [];
+  function applyDevice() {
+    const d = document.documentElement, dev = U.device(), touch = U.isTouch();
+    const changed = d.dataset.device !== dev || d.classList.contains("touch") !== touch;
+    d.dataset.device = dev;
+    d.classList.toggle("touch", touch);
+    if (changed) U.onDevice.forEach((f) => { try { f(dev, touch); } catch (e) { console.error(e); } });
+  }
+  [mqPhone, mqTablet, mqTouch].forEach((m) => m.addEventListener("change", applyDevice));
+  addEventListener("orientationchange", applyDevice);
+  applyDevice();
+  // 觸控：點到別處時收起滑鼠提示（走勢圖自己會再顯示）
+  document.addEventListener("touchstart", (e) => { if (!(e.target instanceof HTMLCanvasElement) && U.hideTip) U.hideTip(); }, { passive: true });
+  U.menuHint = () => (U.isTouch() ? "長按" : "右鍵");
+
   U.el = function (tag, attrs) {
     const e = document.createElement(tag);
     if (attrs) for (const k of Object.keys(attrs)) {
@@ -82,8 +102,8 @@
     }
     document.body.append(m);
     const w = m.offsetWidth, h = m.offsetHeight;
-    m.style.left = Math.min(x, innerWidth - w - 6) + "px";
-    m.style.top = Math.min(y, innerHeight - h - 6) + "px";
+    m.style.left = Math.max(6, Math.min(x, innerWidth - w - 6)) + "px";
+    m.style.top = Math.max(6, Math.min(y, innerHeight - h - 6)) + "px";
     openMenu = m;
   };
   U.closeMenu = () => { if (openMenu) { openMenu.remove(); openMenu = null; } };
@@ -323,11 +343,30 @@
       this.tbody.addEventListener("dblclick", (e) => { const r = this.rowOf(e); if (r !== null && this.onDbl) this.onDbl(this.view[r], e); });
       this.tbody.addEventListener("contextmenu", (e) => {
         e.preventDefault();
+        if (this.lpAt && Date.now() - this.lpAt < 1500) return;      // 長按已經開過選單
         const r = this.rowOf(e);
         if (r !== null && !this.sel.has(this.view[r].id)) this.select(this.view[r].id);
         if (this.onMenu) this.onMenu(r === null ? null : this.view[r], e.clientX, e.clientY);
       });
       this.el.addEventListener("keydown", (e) => this.key(e));
+      // 觸控螢幕：長按一列＝右鍵選單（iPhone 不會送出 contextmenu）
+      let lp = null;
+      const cancel = () => { if (lp) { clearTimeout(lp.t); lp = null; } };
+      this.tbody.addEventListener("touchstart", (e) => {
+        cancel();
+        if (e.touches.length !== 1) return;
+        const t = e.touches[0], r = this.rowOf(e);
+        lp = { x: t.clientX, y: t.clientY, t: setTimeout(() => {
+          lp = null;
+          this.lpAt = Date.now();
+          if (r !== null && r >= 0 && !this.sel.has(this.view[r].id)) this.select(this.view[r].id);
+          if (navigator.vibrate) navigator.vibrate(15);
+          if (this.onMenu) this.onMenu(r === null || r < 0 ? null : this.view[r], t.clientX, t.clientY);
+        }, 550) };
+      }, { passive: true });
+      this.tbody.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (lp && t && Math.hypot(t.clientX - lp.x, t.clientY - lp.y) > 10) cancel(); }, { passive: true });
+      this.tbody.addEventListener("touchend", (e) => { if (this.lpAt && Date.now() - this.lpAt < 800) e.preventDefault(); cancel(); });
+      this.tbody.addEventListener("touchcancel", cancel);
     }
     setHeader(i, text) { this.headers[i] = text; this.renderHead(); }
     setHeaderTips(t) { this.headerTips = t; this.renderHead(); }

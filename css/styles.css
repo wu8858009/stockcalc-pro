@@ -159,19 +159,80 @@ label.chk { display: inline-flex; align-items: center; cursor: pointer; user-sel
 #login label.chk { margin: 4px 0; }
 #login .err { color: var(--GAIN); min-height: 20px; }
 
-/* ---- 手機 ---- */
+/* ---- 平板／手機（ui.js 自動偵測：html[data-device] = desktop / tablet / phone，觸控螢幕加 .touch）---- */
 #menuBtn { display: none; }
-@media (max-width: 900px) {
-  body { overflow: auto; }
-  #app { height: auto; min-height: 100vh; }
-  #sidebar { position: fixed; left: -220px; top: 0; bottom: 0; z-index: 60; transition: left .2s; }
+#navShade { display: none; }
+@media (max-width: 899px) {
+  #app, #main { height: 100vh; height: 100dvh; }
+  #sidebar { position: fixed; left: -230px; top: 0; bottom: 0; z-index: 60; transition: left .2s; box-shadow: 4px 0 24px rgba(0, 0, 0, .5);
+    padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   #sidebar.open { left: 0; }
-  #menuBtn { display: inline-block; }
+  #sidebar.open + #navShade { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, .45); }
+  #menuBtn { display: inline-block; padding: 4px 11px; font-size: 17px; }
+  #main { padding: calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right)) 0 calc(10px + env(safe-area-inset-left)); }
   #cards { flex-wrap: wrap; }
   .card { flex: 1 1 30%; }
   .cardValue { font-size: 17px; }
-  #main { height: 100vh; }
+  #statusbar { margin: 6px calc(-10px - env(safe-area-inset-right)) 0 calc(-10px - env(safe-area-inset-left));
+    height: calc(26px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+  .chartBox { min-height: 260px; }
+  .form { grid-template-columns: 1fr; }
 }
+@media (max-width: 599px) {
+  html, body { font-size: 13px; }
+  #topbar { gap: 6px; }
+  #pageTitle { font-size: 18px; }
+  #pageSub { font-size: 11.5px; }
+  #topbar .hint { display: none; }
+  #topbar button { padding: 5px 9px; }
+  /* 統計卡片：只在「目前持股」顯示，三欄小卡 */
+  body[data-home="0"] #cards { display: none; }
+  #cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
+  .card { padding: 5px 8px; border-radius: 9px; }
+  .cardTitle { font-size: 10.5px; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cardValue { font-size: 15px; margin: 0; }
+  .cardSub { font-size: 10px; min-height: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .page { padding-top: 6px; }
+  .page:not(.scroll) { overflow-y: auto; }
+  .page > .tbl, .page .tbl { min-height: 220px; }
+  .row { gap: 6px; }
+  .menuHint { display: none; }
+  .tbl td { height: 38px; padding: 0 6px; }
+  .tbl th { padding: 7px 6px; }
+  .group { padding: 12px 10px; }
+  .form { grid-template-columns: minmax(0, 1fr); }
+  .form > *, .group, .col { min-width: 0 !important; }
+  .page .row > .group { flex-basis: 100% !important; }
+  .page.row { flex-wrap: nowrap !important; }
+  .page.row > .group { flex: none !important; }
+  .page select, .page input:not([type=checkbox]), .dlg select, .dlg input:not([type=checkbox]) { max-width: 100%; }
+  .page label.chk { white-space: normal; }
+  .tabs { overflow-x: auto; scrollbar-width: none; }
+  .tabs div { padding: 8px 12px; white-space: nowrap; }
+  .seg { flex-wrap: wrap; }
+  .seg button { padding: 5px 10px; }
+  /* 對話框：手機改成接近全螢幕 */
+  .dlg { min-width: 0; width: calc(100vw - 16px) !important; max-width: calc(100vw - 16px); max-height: calc(100dvh - 24px); }
+  .dlgHead { cursor: default; }
+  .dlgFoot { flex-wrap: wrap; }
+  .dlgFoot button { flex: 1 1 auto; }
+  .msgText { max-width: none; }
+  #toasts { left: 8px; right: 8px; bottom: calc(34px + env(safe-area-inset-bottom)); }
+  .toast { max-width: none; max-height: 22vh; overflow-y: auto; }
+  #topbar { flex-wrap: nowrap; }
+  #pageTitle, #pageSub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; padding-right: 0; }
+  #topbar button { flex: none; }
+  .menu { max-width: calc(100vw - 12px); max-height: 70vh; overflow-y: auto; }
+  .menu div { padding: 10px 18px; }
+  #tip { max-width: calc(100vw - 16px); }
+  #login .box { width: calc(100vw - 32px); max-width: 360px; padding: 22px 18px; }
+  #statusMsg { font-size: 11px; }
+  .edition { padding: 0 4px; font-size: 11px; }
+}
+/* 觸控螢幕：按鈕加大，輸入框用 16px 避免 iPhone 點了自動放大 */
+html.touch button, html.touch .btn { min-height: 34px; }
+html.touch .navItem { padding: 11px 10px; }
+@media (max-width: 899px) { html.touch input, html.touch select, html.touch textarea { font-size: 16px; } }
 
 /* ---- 走勢圖、說明、基本資料 ---- */
 .chartBox { flex: 1; min-height: 380px; position: relative; }
@@ -185,4 +246,5 @@ label.chk { display: inline-flex; align-items: center; cursor: pointer; user-sel
 .browser.help td { padding: 3px 14px 3px 0; } .browser.help .key { color: var(--ACCENT_TEXT); font-weight: 700; white-space: nowrap; }
 .browser.info th { font-weight: 400; }
 .dlgFoot .grow { flex: 1; }
-@media (max-width: 900px) { .chartBox { min-height: 300px; } .form { grid-template-columns: 1fr; } }
+@media (max-width: 899px) { .chartBox { min-height: 260px; } }
+@media (max-width: 599px) { .chartBox { min-height: 240px; } .chartTitle { font-size: 14px; } }

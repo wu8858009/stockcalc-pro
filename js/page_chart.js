@@ -47,6 +47,7 @@
       this.canvas.addEventListener("keydown", (e) => this.keyPress(e));
       // 手機：手指拖曳也能看十字線
       this.canvas.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) { e.preventDefault(); this.mouseMove(t); } }, { passive: false });
+      this.canvas.addEventListener("touchstart", (e) => { const t = e.touches[0]; if (t) this.mouseMove(t); }, { passive: true });
       new ResizeObserver(() => this.update()).observe(this.el);
     }
     setData(rows, prev, intraday, mode, mas, markers, cost, targets, rangeLabel) {
@@ -77,7 +78,8 @@
         `<span style='color:${th.MUTED}'>短期股價接近隨機，請只當參考。</span>`);
       return lines.join("<br>");
     }
-    barsRight(right) { return this.future() ? right - ChartWidget.FUTURE_W : right; }
+    futureW() { return Math.round(Math.min(ChartWidget.FUTURE_W, Math.max(84, this.size()[0] * 0.26))); }   // 手機窄螢幕縮小預測欄
+    barsRight(right) { return this.future() ? right - this.futureW() : right; }
     trackFor(j) {
       if (!(this.showPred && this.pred && j > 0) || ["3年", "5年", "5日"].includes(this.rangeLabel) || this.intraday) return null;
       return (this.pred.track || {})[this.rows[j - 1][0].slice(0, 10)] || null;
@@ -272,7 +274,7 @@
           if (tg.length >= k) text(tg[k - 1].slice(5).replace("-", "/"), cx, yy + 17);
         }
         p.fillStyle = th.MUTED; p.font = small;
-        text("模型預測（滑鼠移上來看說明）", (fx0 + right) / 2, top + 9);
+        text(right - fx0 < 130 ? "模型預測" : U.isTouch() ? "模型預測（點一下看說明）" : "模型預測（滑鼠移上來看說明）", (fx0 + right) / 2, top + 9);
         text(`依 ${String(this.pred.base_date || "").slice(5).replace("-", "/")} 收盤`, (fx0 + right) / 2, top + 23);
       }
       // 成交量

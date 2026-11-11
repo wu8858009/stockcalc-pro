@@ -83,7 +83,7 @@
       this.summary = el("span", { cls: "hint" });
       const top = el("div", { cls: "row" }, this.sym.input, U.btn("＋ 加入觀察", () => this.addInput(), "primary", (T.WIDGET_TIPS["＋ 加入觀察"] || "") + "\n快捷鍵：Ctrl+W／Enter"),
         U.btn("設定目標價", () => this.editSelected(), "", (T.WIDGET_TIPS["設定目標價"] || "") + "\n快捷鍵：Enter"), this.bAuto,
-        U.btn("移除", () => this.removeSelected(), "danger", "快捷鍵：Delete"), this.summary, el("span", { cls: "grow" }), el("span", null, "右鍵可買進／預測／查股利"));
+        U.btn("移除", () => this.removeSelected(), "danger", "快捷鍵：Delete"), this.summary, el("span", { cls: "grow" }), el("span", { cls: "menuHint" }, U.menuHint() + "可買進／預測／查股利"));
       const sort = App.store.settings.sort_watch || [2, 0];
       this.table = new U.Table(["代號", "名稱", "現價", "漲跌", "漲跌幅", "開盤", "最高", "最低", "買進目標", "賣出目標", "提醒", "加入時價格", "加入後漲跌", "殖利率", "配息", "備註", "加入日"],
         { flashCol: 2, multi: true, sortCol: sort[0], sortAsc: sort[1] === 0, onSort: (c, asc) => { App.store.settings.sort_watch = [c, asc ? 0 : 1]; App.store.save(); },
